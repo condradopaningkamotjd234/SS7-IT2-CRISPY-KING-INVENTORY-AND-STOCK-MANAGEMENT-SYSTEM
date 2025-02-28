@@ -1,15 +1,15 @@
 <?php
-$servername = "localhost";  // Use 'localhost' if connecting locally
+$servername = "localhost";
 $username = "mariadb";
 $password = "mariadb";
 $dbname = "mariadb";
 
 // Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = mysqli_connect($servername, $username, $password, $dbname);
 
 // Check connection
-if ($conn->connect_error) {
-    die("Connection failed: (" . $conn->connect_errno . ") " . $conn->connect_error);
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
 }
 echo "Connected successfully";
 ?>
