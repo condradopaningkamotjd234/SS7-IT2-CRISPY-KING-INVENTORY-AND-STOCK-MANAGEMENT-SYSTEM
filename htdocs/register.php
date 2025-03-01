@@ -1,37 +1,36 @@
 <?php
 include 'db_connect.php';
-session_start();
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = htmlspecialchars($_POST['username']);
-    $password = $_POST['password'];
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $account_level = $_POST['account_level'];
 
+    // Check if username is unique
     $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
 
-    if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['account_level'] = $user['account_level'];
-        header("Location: dashboard.php");
+    if ($result->num_rows > 0) {
+        $error = "Username already exists.";
     } else {
-        $error = "Invalid username or password.";
+        $stmt = $conn->prepare("INSERT INTO users (username, password, account_level) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $username, $password, $account_level);
+        $stmt->execute();
+        $success = "Registration successful!";
     }
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Login</title>
+    <title>Register</title>
     <link href="bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-
 <ul>
     <li>
-    <a href="ndex.php" class="button">Home</a>
+    <a href="index.php" class="button">Home</a>
     <a href="login.php" class="button">Login</a>
     <a href="register.php" class="button">Register</a>
     </li>
@@ -40,10 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="container mt-5">
     <div class="card mx-auto" style="max-width: 500px;">
         <div class="card-header text-center">
-            <h2>Login</h2>
+            <h2>Register</h2>
         </div>
         <div class="card-body">
             <?php if (isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
+            <?php if (isset($success)) echo "<div class='alert alert-success'>$success</div>"; ?>
             <form method="POST" action="">
                 <div class="mb-3">
                     <label for="username" class="form-label">Username</label>
@@ -53,7 +53,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="password" class="form-label">Password</label>
                     <input type="password" name="password" class="form-control" required>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Login</button>
+                <div class="mb-3">
+                    <label for="account_level" class="form-label">Account Level</label>
+                    <select name="account_level" class="form-select" required>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Register</button>
             </form>
         </div>
     </div>

@@ -1,99 +1,75 @@
 <?php
-// Ensure the inventory data is fetched before rendering the HTML
-$inventory = []; // Fetch inventory data from the database
+include "db_connect.php"; 
+session_start();
+
+if (!isset($_SESSION['username'])) {
+    header("Location: index.php");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crispy King Inventory & Stock Management System</title>
-    <link rel="stylesheet" href="css/dashboard.css"> <!-- Changed to external CSS for a professional look -->
+    <title>Welcome to Crispy King</title>
+    <link href="css/styles.css" rel="stylesheet">
 </head>
-<body>
-    <!-- Added container wrapper -->
-    <div class="container">
-        <header class="main-header">
-            <h1>Welcome to Crispy King Inventory & Stock Management System</h1>
-            <!-- Removed navigation from header -->
-        </header>
-        <div class="content-wrapper">
-            <aside class="sidebar">
-                <ul>
-                    <li><a href="dashboard.php">Dashboard</a></li>
-                    <!-- Added sample order_id parameter -->
-                    <li><a href="orderdetails.php">Order Details</a></li>
-                    <li><a href="order.php">order</a></li>
-                    <li><a href="logout.php">Logout</a></li>
-                </ul>
-            </aside>
-            <main class="dashboard-content">
-                <section class="inventory-overview">
-                    <h2>Inventory Overview</h2>
+<body class="bg-light">
+<div class="container mt-5 text-center">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSziaErl20gqmnCy3UkUABRLOev7JO29bnqED6jkNOfN2YMCN0uGsQdjcfmHMMFa4od-lM&usqp=CAU" class="logo">
+    <h1>Welcome to Crispy King, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h1>
+    <p>Account Level: <?php echo htmlspecialchars($_SESSION['account_level']); ?></p>
+    <?php if ($_SESSION['account_level'] === 'admin'): ?>
+        <a href="index.php" class="btn btn-danger">Go to Admin Page</a>
+    <?php else: ?>
+        <a href="index.php" class="btn btn-success">Go to User Page</a>
+    <?php endif; ?>
+    <a href="logout.php" class="btn btn-secondary mt-3">Logout</a>
+</div>
+<div class="image-container">
+</div>
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+}
 
-                    <!-- Search bar for filtering -->
-                    <div class="search-bar">
-                        <form method="GET" action="dashboard.php">
-                            <input type="text" name="search" placeholder="Search items..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
-                            <button type="submit">Search</button>
-                        </form>
-                    </div>
+.container {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
 
-                    <div class="table-responsive">
-                        <table class="inventory-table">
-                            <thead>
-                                <tr>
-                                    <th>Item ID</th>
-                                    <th>Item Name</th>
-                                    <th>Category</th>
-                                    <th>Quantity</th>
-                                    <th>Price</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($inventory)): ?>
-                                    <?php foreach ($inventory as $item): ?>
-                                        <tr class="<?php echo ($item['quantity'] < 5) ? 'low-stock' : ''; ?>">
-                                            <td><?php echo $item['id']; ?></td>
-                                            <td><?php echo htmlspecialchars($item['name']); ?></td>
-                                            <td><?php echo htmlspecialchars($item['category']); ?></td>
-                                            <td><?php echo $item['quantity']; ?></td>
-                                            <td>$<?php echo number_format($item['price'], 2); ?></td>
-                                            <td>
-                                                <a href="update_item.php?id=<?php echo $item['id']; ?>">Update</a> | 
-                                                <a href="delete_item.php?id=<?php echo $item['id']; ?>" onclick="return confirm('Are you sure you want to delete this item?')">Delete</a>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="6">No items found in the inventory.</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+.logo {
+    width: 150px;
+    margin-bottom: 20px;
+}
 
-                    <div class="pagination">
-                        <!-- Pagination placeholder for professional design -->
-                        <p>Page 1 of 1</p>
-                    </div>
-                </section>
+h1 {
+    color: #333333;
+}
 
-                <!-- New Flowchart section for full screen view -->
-                <section class="flowchart-section">
-                    <h2>Flowchart Overview</h2>
-                    <div id="flowchart-container">
-                        <!-- Flowchart visualization placeholder -->
-                        <p>Flowchart goes here...</p>
-                    </div>
-                </section>
-            </main>
-        </div>
-        <footer class="site-footer">
-            <p>&copy; 2025 Crispy King. All rights reserved.</p>
-        </footer>
-    </div>
+p {
+    color: #666666;
+}
+
+.btn {
+    margin: 10px;
+}
+
+.image-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.welcome-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+</style>
 </body>
 </html>
