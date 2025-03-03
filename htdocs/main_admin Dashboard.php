@@ -25,6 +25,7 @@ $inventory = []; // Fetch inventory data from the database
                     <!-- Added sample order_id parameter -->
                     <li><a href="orderdetails.php">Order Details</a></li>
                     <li><a href="order.php">order</a></li>
+                    <li><a href="sales.php">Sales</a></li>
                     <li><a href="logout.php">Logout</a></li>
                 </ul>
             </aside>

@@ -60,19 +60,21 @@ if (isset($_GET['delete'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Management</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="dashboard.css" href="styles.css">
 </head>
 <body>
     <div class="dashboard-container">
-        <aside class="sidebar">
-            <h2>Dashboard</h2>
-            <ul>
-                <li><a href="products.php">Products</a></li>
-                <li><a href="sales.php">Sales</a></li>
-                <li><a href="suppliers.php">Suppliers</a></li>
-                <li><a href="orders.php">Orders</a></li>
-            </ul>
-        </aside>
+    <aside class="sidebar">
+                <ul>
+                    <li><a href="dashboard.php">Dashboard</a></li>
+                    <li><a href="stock.php">Stock</a></li>
+                    <!-- Added sample order_id parameter -->
+                    <li><a href="orderdetails.php">Order Details</a></li>
+                    <li><a href="order.php">order</a></li>
+                    <li><a href="sales.php">Sales</a></li>
+                    <li><a href="logout.php">Logout</a></li>
+                </ul>
+            </aside>
 
         <main class="dashboard-content">
             <header class="dashboard-header">

@@ -1,101 +1,52 @@
+<?php
+  $title = "Welcome to Crispy King";
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
-  <link rel="stylesheet" href="css/dashboard.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $title; ?></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FFFAE5;
+            text-align: center;
+            padding: 50px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+        .button {
+            background-color: #FFA500;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+        .button:hover {
+            background-color: #FF8C00;
+        }
+    </style>
 </head>
 <body>
-  <div class="dashboard-container">
-    <aside class="sidebar">
-      <h2>Dashboard</h2>
-      <ul>
-        <li><a href="products.php">Products</a></li>
-        <li><a href="sales.php">Sales</a></li>
-        <li><a href="suppliers.php">Suppliers</a></li>
-        <li><a href="orders.php">Orders</a></li>
-      </ul>
-    </aside>
-    <main class="dashboard-content">
-      <header class="dashboard-header">
-        <h1>Welcome to the Dashboard</h1>
-      </header>
-    </main>
-  </div>
-<style> 
-  /* General Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
-
-body {
-  display: flex;
-  height: 100vh;
-  background-color: #f4f4f4;
-}
-
-/* Sidebar */
-.sidebar {
-  width: 250px;
-  background: #2c3e50;
-  color: white;
-  padding: 20px;
-  position: fixed;
-  height: 100%;
-}
-
-.sidebar h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 22px;
-}
-
-.sidebar ul {
-  list-style: none;
-}
-
-.sidebar ul li {
-  margin: 15px 0;
-}
-
-.sidebar ul li a {
-  text-decoration: none;
-  color: white;
-  display: block;
-  padding: 10px;
-  border-radius: 5px;
-  transition: background 0.3s;
-}
-
-.sidebar ul li a:hover {
-  background: #34495e;
-}
-
-/* Main Dashboard Content */
-.dashboard-container {
-  display: flex;
-  width: 100%;
-}
-
-.dashboard-content {
-  margin-left: 250px;
-  padding: 20px;
-  flex-grow: 1;
-}
-
-.dashboard-header {
-  background: white;
-  padding: 15px;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
-
-</style>
+    <div class="container">
+        <h1><?php echo $title; ?></h1>
+        <p>Manage your inventory with ease and efficiency.</p>
+        <a href="dashboard.php" class="button">Get Started</a>
+    </div>
+<ul>
+    <li>
+    <a href="login.php" class="button">Login</a>
+    <a href="register.php" class="button">Register</a>
+    </li>
+</ul>
 
 
 </body>

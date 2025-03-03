@@ -21,7 +21,7 @@ if (!isset($_SESSION['username'])) {
     <h1>Welcome to Crispy King, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h1>
     <p>Account Level: <?php echo htmlspecialchars($_SESSION['account_level']); ?></p>
     <?php if ($_SESSION['account_level'] === 'admin'): ?>
-        <a href="index.php" class="btn btn-danger">Go to Admin Page</a>
+        <a href="main_admin Dashboard.php" class="btn btn-danger">Go to Admin Page</a>
     <?php else: ?>
         <a href="index.php" class="btn btn-success">Go to User Page</a>
     <?php endif; ?>
