@@ -1,57 +1,51 @@
 <?php
-include 'db_connect.php';
+    include "db.php";
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL); 
+    session_start();
 
-// Enable error reporting for debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// Handle new sale transaction
+if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['add_sale'])) {
+    $product_name = $_POST['product_name'];
+    $quantity_sold = $_POST['quantity_sold'];
 
-// Handle Add Sale
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_sale'])) {
-    $product_id = intval($_POST['product_id']);
-    $quantity = intval($_POST['quantity']);
-    $total_price = floatval($_POST['total_price']);
-    $sale_date = date('Y-m-d H:i:s');
+    // Get product price and check stock
+    $product = $conn->query("SELECT price, stock_quantity FROM Products WHERE name = '$product_name'")->fetch_assoc();
+    if ($product && $product['stock_quantity'] >= $quantity_sold) {
+        $total_price = $product['price'] * $quantity_sold;
 
-    if ($product_id > 0 && $quantity > 0 && $total_price > 0) {
-        // Insert Sale
-        $stmt = $mysqli->prepare("INSERT INTO sales (product_id, quantity, total_price, sale_date) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("iids", $product_id, $quantity, $total_price, $sale_date);
+        // Insert into Sales table
+        $conn->query("INSERT INTO Sales (product_name, quantity_sold, total_price) 
+                      VALUES ('$product_name', '$quantity_sold', '$total_price')");
 
-        if ($stmt->execute()) {
-            // Update Stock Level
-            $stmt = $mysqli->prepare("UPDATE product SET StockLevel = StockLevel - ? WHERE ProductID = ?");
-            $stmt->bind_param("ii", $quantity, $product_id);
-            $stmt->execute();
-
-            header("Location: sales.php?success=Sale added successfully");
-            exit();
-        } else {
-            $error = "Error adding sale: " . $mysqli->error;
-        }
-        $stmt->close();
+        // Update inventory (reduce stock)
+        $conn->query("UPDATE Products SET stock_quantity = stock_quantity - $quantity_sold WHERE name = '$product_name'");
     } else {
-        $error = "Invalid input. Please fill all fields correctly.";
+        echo "<script>alert('Not enough stock available!');</script>";
     }
+
+    header("Location: sales.php");
 }
 
-// Handle Delete Sale
+// Handle deleting a sale
 if (isset($_GET['delete'])) {
-    $sale_id = intval($_GET['delete']);
-    if ($sale_id > 0) {
-        $stmt = $mysqli->prepare("DELETE FROM sales WHERE sale_id = ?");
-        $stmt->bind_param("i", $sale_id);
-        if ($stmt->execute()) {
-            header("Location: sales.php?success=Sale deleted successfully");
-            exit();
-        } else {
-            $error = "Error deleting sale: " . $mysqli->error;
-        }
-        $stmt->close();
-    } else {
-        $error = "Invalid sale ID.";
+    $sale_id = $_GET['delete'];
+    $sale = $conn->query("SELECT * FROM Sales WHERE product_name = '$sale_id'")->fetch_assoc();
+    
+    if ($sale) {
+        // Restore stock before deleting the sale record
+        $conn->query("UPDATE Products SET stock_quantity = stock_quantity + {$sale['quantity_sold']} WHERE name = '{$sale['product_name']}'");
+        $conn->query("DELETE FROM Sales WHERE product_name = '$sale_id'");
     }
+
+    header("Location: sales.php");
 }
+
+// Fetch all sales records
+$sales = $conn->query("SELECT * FROM Sales");
+
+// Fetch available products for sales entry
+$products = $conn->query("SELECT * FROM Products WHERE stock_quantity > 0");
 ?>
 
 <!DOCTYPE html>
@@ -59,78 +53,87 @@ if (isset($_GET['delete'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Management</title>
-    <link rel="stylesheet" href="dashboard.css" href="styles.css">
+    <title>Sales - Crispy King</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="dashboard-container">
-    <aside class="sidebar">
-                <ul>
-                    <li><a href="dashboard.php">Dashboard</a></li>
-                    <li><a href="stock.php">Stock</a></li>
-                    <!-- Added sample order_id parameter -->
-                    <li><a href="orderdetails.php">Order Details</a></li>
-                    <li><a href="order.php">order</a></li>
-                    <li><a href="sales.php">Sales</a></li>
-                    <li><a href="logout.php">Logout</a></li>
-                </ul>
-            </aside>
 
-        <main class="dashboard-content">
-            <header class="dashboard-header">
-                <h1>Sales Management</h1>
-            </header>
-
-            <?php if (!empty($error)) echo "<p class='error'>$error</p>"; ?>
-            <?php if (isset($_GET['success'])) echo "<p class='success-msg'>" . htmlspecialchars($_GET['success']) . "</p>"; ?>
-
-            <section class="sales-form">
-                <h2>Add New Sale</h2>
-                <form method="POST" action="sales.php">
-                    <input type="number" name="product_id" placeholder="Product ID" required>
-                    <input type="number" name="quantity" placeholder="Quantity" required>
-                    <input type="text" name="total_price" placeholder="Total Price" required>
-                    <button type="submit" name="add_sale" class="btn">Add Sale</button>
-                </form>
-            </section>
-
-            <section class="sales-list">
-                <h2>Sales Records</h2>
-                <table class="inventory-table">
-                    <thead>
-                        <tr>
-                            <th>Sale ID</th>
-                            <th>Product ID</th>
-                            <th>Quantity</th>
-                            <th>Total Price</th>
-                            <th>Sale Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $query = "SELECT * FROM sales";
-                        $result = $mysqli->query($query);
-                        if ($result->num_rows > 0) {
-                            while ($row = $result->fetch_assoc()) {
-                                echo "<tr>
-                                        <td>" . htmlspecialchars($row['sale_id']) . "</td>
-                                        <td>" . htmlspecialchars($row['product_id']) . "</td>
-                                        <td>" . htmlspecialchars($row['quantity']) . "</td>
-                                        <td>$" . number_format($row['total_price'], 2) . "</td>
-                                        <td>" . htmlspecialchars($row['sale_date']) . "</td>
-                                        <td><a href='sales.php?delete=" . $row['sale_id'] . "' class='delete-btn' onclick='return confirm(\"Are you sure?\")'>Delete</a></td>
-                                    </tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='6'>No sales records found.</td></tr>";
-                        }
-                        $mysqli->close();
-                        ?>
-                    </tbody>
-                </table>
-            </section>
-        </main>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="dashboard.php">Crispy King</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="inventory.php">Inventory</a></li>
+                <li class="nav-item"><a class="nav-link" href="sales.php">Sales</a></li>
+                <li class="nav-item"><a class="nav-link" href="suppliers.php">Suppliers</a></li>
+                <li class="nav-item"><a class="nav-link" href="reports.php">Reports</a></li>
+                <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Logout</a></li>
+            </ul>
+        </div>
     </div>
+</nav>
+
+    <div class="container mt-5">
+        <h2 class="text-center">Sales Management</h2>
+
+
+        <h4>New Sale</h4>
+        <form method="POST" class="mb-4">
+            <div class="row">
+                <div class="col-md-5">
+                    <select name="product_name" class="form-control" required>
+                        <option value="">Select Product</option>
+                        <?php while ($row = $products->fetch_assoc()): ?>
+                            <option value="<?php echo $row['name']; ?>"><?php echo $row['name']; ?> - ₱<?php echo number_format($row['price'], 2); ?></option>
+                        <?php endwhile; ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" name="quantity_sold" class="form-control" placeholder="Quantity Sold" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" name="add_sale" class="btn btn-success">Record Sale</button>
+                </div>
+            </div>
+        </form>
+
+        <h4>Sales Records</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Quantity Sold</th>
+                    <th>Total Price</th>
+                    <th>Sale Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($row = $sales->fetch_assoc()): ?>
+                <tr>
+                    <td><?php echo $row['product_name']; ?></td>
+                    <td><?php echo $row['quantity_sold']; ?></td>
+                    <td>₱<?php echo number_format($row['total_price'], 2); ?></td>
+                    <td><?php echo $row['sale_date']; ?></td>
+                    <td>
+                        <a href="sales.php?delete=<?php echo $row['product_name']; ?>" class="btn btn-danger btn-sm"
+                           onclick="return confirm('Are you sure you want to delete this sale?');">Delete</a>
+                    </td>
+                </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 fixed-bottom">
+        <p>&copy; <?php echo date('Y'); ?> Crispy King. All rights reserved.</p>
+    </footer>
+
 </body>
 </html>

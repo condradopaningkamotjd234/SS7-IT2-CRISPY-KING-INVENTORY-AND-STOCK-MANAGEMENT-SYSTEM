@@ -1,5 +1,5 @@
 <?php
-include 'db_connect.php';
+include 'db.php';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = htmlspecialchars($_POST['username']);
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
@@ -28,13 +28,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link href="bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-<ul>
-    <li>
-    <a href="index.php" class="button">Home</a>
-    <a href="login.php" class="button">Login</a>
-    <a href="register.php" class="button">Register</a>
-    </li>
-</ul>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="dashboard.php">Crispy King</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="inventory.php">Inventory</a></li>
+                <li class="nav-item"><a class="nav-link" href="sales.php">Sales</a></li>
+                <li class="nav-item"><a class="nav-link" href="suppliers.php">Suppliers</a></li>
+                <li class="nav-item"><a class="nav-link" href="reports.php">Reports</a></li>
+                <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
 
 <div class="container mt-5">
     <div class="card mx-auto" style="max-width: 500px;">
@@ -65,5 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 </div>
+
+<footer class="bg-dark text-white text-center py-3 fixed-bottom">
+        <p>&copy; <?php echo date('Y'); ?> Crispy King. All rights reserved.</p>
+    </footer>
+
 </body>
 </html>

@@ -16,32 +16,29 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `OrderDetails`
+-- Table structure for table `Inventory`
 --
 
-DROP TABLE IF EXISTS `OrderDetails`;
+DROP TABLE IF EXISTS `Inventory`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `OrderDetails` (
-  `OrderDetailID` varchar(40) NOT NULL,
-  `OrderID` varchar(40) NOT NULL,
-  `productID` varchar(40) NOT NULL,
-  `Quantity` varchar(40) DEFAULT NULL,
-  `Cost` varchar(40) NOT NULL,
-  `UserID` varchar(40) NOT NULL,
-  PRIMARY KEY (`OrderDetailID`,`UserID`),
-  KEY `Orders_OrderDetails` (`OrderID`),
-  CONSTRAINT `Orders_OrderDetails` FOREIGN KEY (`OrderID`) REFERENCES `Orders` (`OrderID`)
+CREATE TABLE `Inventory` (
+  `product_name` varchar(255) DEFAULT NULL,
+  `stock_added` int(11) DEFAULT NULL,
+  `stock_removed` int(11) DEFAULT NULL,
+  `date_updated` timestamp NOT NULL DEFAULT current_timestamp(),
+  KEY `product_name` (`product_name`),
+  CONSTRAINT `Inventory_ibfk_1` FOREIGN KEY (`product_name`) REFERENCES `Products` (`name`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `OrderDetails`
+-- Dumping data for table `Inventory`
 --
 
-LOCK TABLES `OrderDetails` WRITE;
-/*!40000 ALTER TABLE `OrderDetails` DISABLE KEYS */;
-/*!40000 ALTER TABLE `OrderDetails` ENABLE KEYS */;
+LOCK TABLES `Inventory` WRITE;
+/*!40000 ALTER TABLE `Inventory` DISABLE KEYS */;
+/*!40000 ALTER TABLE `Inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -52,16 +49,15 @@ DROP TABLE IF EXISTS `Orders`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Orders` (
-  `OrderID` varchar(40) NOT NULL,
-  `SupplierID` varchar(40) NOT NULL,
-  `OrderDate` varchar(40) DEFAULT NULL,
-  `TotalCost` varchar(40) DEFAULT NULL,
-  `Status` varchar(40) DEFAULT NULL,
-  `UserID` varchar(40) NOT NULL,
-  PRIMARY KEY (`OrderID`),
-  KEY `Users_Orders` (`UserID`),
-  CONSTRAINT `Users_Orders` FOREIGN KEY (`UserID`) REFERENCES `Users` (`UserID`),
-  CONSTRAINT `Users_Orders_Relations` FOREIGN KEY (`UserID`) REFERENCES `Users` (`UserID`)
+  `supplier_name` varchar(255) DEFAULT NULL,
+  `product_name` varchar(255) DEFAULT NULL,
+  `order_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `quantity_ordered` int(11) DEFAULT NULL,
+  `status` enum('Pending','Delivered') DEFAULT NULL,
+  KEY `supplier_name` (`supplier_name`),
+  KEY `product_name` (`product_name`),
+  CONSTRAINT `Orders_ibfk_1` FOREIGN KEY (`supplier_name`) REFERENCES `Suppliers` (`name`) ON DELETE CASCADE,
+  CONSTRAINT `Orders_ibfk_2` FOREIGN KEY (`product_name`) REFERENCES `Products` (`name`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -75,64 +71,30 @@ LOCK TABLES `Orders` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `Product`
+-- Table structure for table `Products`
 --
 
-DROP TABLE IF EXISTS `Product`;
+DROP TABLE IF EXISTS `Products`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `Product` (
-  `ProductID` varchar(40) NOT NULL,
-  `Name` varchar(40) DEFAULT NULL,
-  `Category` varchar(40) DEFAULT NULL,
-  `UnitPrice` varchar(40) DEFAULT NULL,
-  `StockLevel` varchar(40) DEFAULT NULL,
-  `ExpriyDate` varchar(40) DEFAULT NULL,
-  `OrderDetailID` varchar(40) NOT NULL,
-  `OrderID` varchar(40) NOT NULL,
-  `UserID` varchar(40) NOT NULL,
-  PRIMARY KEY (`ProductID`,`OrderID`,`UserID`),
-  KEY `OrderDetails_Product` (`OrderDetailID`,`UserID`),
-  CONSTRAINT `OrderDetails_Product` FOREIGN KEY (`OrderDetailID`, `UserID`) REFERENCES `OrderDetails` (`OrderDetailID`, `UserID`)
+CREATE TABLE `Products` (
+  `name` varchar(255) NOT NULL,
+  `category` varchar(255) DEFAULT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `stock_quantity` int(11) DEFAULT NULL,
+  `expiry_date` date DEFAULT NULL,
+  PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `Product`
+-- Dumping data for table `Products`
 --
 
-LOCK TABLES `Product` WRITE;
-/*!40000 ALTER TABLE `Product` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Product` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `SaleDetails`
---
-
-DROP TABLE IF EXISTS `SaleDetails`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `SaleDetails` (
-  `SaleDetailID` varchar(40) NOT NULL,
-  `SaleID` varchar(40) NOT NULL,
-  `Quantity` varchar(40) DEFAULT NULL,
-  `Price` varchar(40) DEFAULT NULL,
-  `OrderID` varchar(40) NOT NULL,
-  `EmployedID` varchar(40) NOT NULL,
-  PRIMARY KEY (`SaleDetailID`,`EmployedID`),
-  KEY `Sales_SaleDetails` (`SaleID`,`OrderID`),
-  CONSTRAINT `Sales_SaleDetails` FOREIGN KEY (`SaleID`, `OrderID`) REFERENCES `Sales` (`SaleID`, `OrderID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `SaleDetails`
---
-
-LOCK TABLES `SaleDetails` WRITE;
-/*!40000 ALTER TABLE `SaleDetails` DISABLE KEYS */;
-/*!40000 ALTER TABLE `SaleDetails` ENABLE KEYS */;
+LOCK TABLES `Products` WRITE;
+/*!40000 ALTER TABLE `Products` DISABLE KEYS */;
+INSERT INTO `Products` VALUES ('Breast','1231',20000.00,1,'2025-03-03'),('Chking wings','123123',213123.00,1256663,'2025-03-03'),('thighs','1234',250.00,5000,'2025-03-03');
+/*!40000 ALTER TABLE `Products` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -143,17 +105,12 @@ DROP TABLE IF EXISTS `Sales`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Sales` (
-  `SaleID` varchar(40) NOT NULL,
-  `Date` varchar(40) DEFAULT NULL,
-  `TotalAmount` varchar(40) DEFAULT NULL,
-  `EmployedID` varchar(40) DEFAULT NULL,
-  `UserID` varchar(40) NOT NULL,
-  `ProductID` varchar(40) NOT NULL,
-  `OrderDetailID` varchar(40) NOT NULL,
-  `OrderID` varchar(40) NOT NULL,
-  PRIMARY KEY (`SaleID`,`OrderID`),
-  KEY `Users_Sales` (`UserID`),
-  CONSTRAINT `Users_Sales` FOREIGN KEY (`UserID`) REFERENCES `Users` (`UserID`)
+  `product_name` varchar(255) DEFAULT NULL,
+  `quantity_sold` int(11) DEFAULT NULL,
+  `sale_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `total_price` decimal(10,2) DEFAULT NULL,
+  KEY `product_name` (`product_name`),
+  CONSTRAINT `Sales_ibfk_1` FOREIGN KEY (`product_name`) REFERENCES `Products` (`name`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -163,67 +120,8 @@ CREATE TABLE `Sales` (
 
 LOCK TABLES `Sales` WRITE;
 /*!40000 ALTER TABLE `Sales` DISABLE KEYS */;
+INSERT INTO `Sales` VALUES ('Breast',10,'2025-03-03 06:53:27',200000.00),('Chking wings',12,'2025-03-03 07:21:26',2557476.00);
 /*!40000 ALTER TABLE `Sales` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `Stock`
---
-
-DROP TABLE IF EXISTS `Stock`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `Stock` (
-  `StockID` varchar(40) NOT NULL,
-  `ProductID` varchar(40) NOT NULL,
-  `Quantity` varchar(40) DEFAULT NULL,
-  `Status` varchar(40) DEFAULT NULL,
-  `DateAdded` varchar(40) DEFAULT NULL,
-  `LastUpdated` varchar(40) DEFAULT NULL,
-  `UserID` varchar(40) NOT NULL,
-  PRIMARY KEY (`StockID`,`UserID`),
-  KEY `Users_Stock` (`UserID`),
-  CONSTRAINT `Users_Stock` FOREIGN KEY (`UserID`) REFERENCES `Users` (`UserID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `Stock`
---
-
-LOCK TABLES `Stock` WRITE;
-/*!40000 ALTER TABLE `Stock` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Stock` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `StockAlerts`
---
-
-DROP TABLE IF EXISTS `StockAlerts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `StockAlerts` (
-  `AlertID` varchar(40) NOT NULL,
-  `AlertType` varchar(40) DEFAULT NULL,
-  `AlertDate` varchar(40) DEFAULT NULL,
-  `Status` varchar(40) DEFAULT NULL,
-  `StockID` varchar(40) NOT NULL,
-  `UserID` varchar(40) NOT NULL,
-  PRIMARY KEY (`AlertID`,`UserID`),
-  KEY `Stock_StockAlerts` (`StockID`,`UserID`),
-  CONSTRAINT `Monitors_MonitorsAlerts` FOREIGN KEY (`StockID`, `UserID`) REFERENCES `Stock` (`StockID`, `UserID`),
-  CONSTRAINT `Stock_StockAlerts` FOREIGN KEY (`StockID`, `UserID`) REFERENCES `Stock` (`StockID`, `UserID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `StockAlerts`
---
-
-LOCK TABLES `StockAlerts` WRITE;
-/*!40000 ALTER TABLE `StockAlerts` DISABLE KEYS */;
-/*!40000 ALTER TABLE `StockAlerts` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -234,15 +132,10 @@ DROP TABLE IF EXISTS `Suppliers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Suppliers` (
-  `SuplierID` varchar(40) NOT NULL,
-  `Name` varchar(40) DEFAULT NULL,
-  `ContactInfo` varchar(40) DEFAULT NULL,
-  `Address` varchar(40) DEFAULT NULL,
-  `OrderID` varchar(40) NOT NULL,
-  `UserID` varchar(40) NOT NULL,
-  PRIMARY KEY (`SuplierID`,`OrderID`,`UserID`),
-  KEY `Orders_Suppliers` (`OrderID`),
-  CONSTRAINT `Orders_Suppliers` FOREIGN KEY (`OrderID`) REFERENCES `Orders` (`OrderID`)
+  `name` varchar(255) NOT NULL,
+  `contact_info` varchar(255) DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -280,31 +173,6 @@ LOCK TABLES `Users` WRITE;
 /*!40000 ALTER TABLE `Users` DISABLE KEYS */;
 /*!40000 ALTER TABLE `Users` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `user_form`
---
-
-DROP TABLE IF EXISTS `user_form`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user_form` (
-  `id` int(255) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `user_type` varchar(255) NOT NULL DEFAULT 'user'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_form`
---
-
-LOCK TABLES `user_form` WRITE;
-/*!40000 ALTER TABLE `user_form` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_form` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -315,4 +183,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-02-28  6:46:46
+-- Dump completed on 2025-03-03  7:24:34
