@@ -1,7 +1,9 @@
 <?php
-include "db.php";
+    include "db.php";
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL); 
+    session_start();
 
-session_start();
 
 // Handle adding a new supplier
 if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['add_supplier'])) {
@@ -24,8 +26,22 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['add_supplier'])) {
     }
 }
 
+// Handle deleting a supplier
+if (isset($_GET['delete'])) {
+    $name = urldecode($_GET['delete']);
+    $stmt = $conn->prepare("DELETE FROM Suppliers WHERE name = ?");
+    $stmt->bind_param("s", $name);
+    
+    if ($stmt->execute()) {
+        header("Location: suppliers.php");
+        exit();
+    } else {
+        echo "Error deleting record: " . $stmt->error;
+    }
+    
+    $stmt->close();
+}
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -77,9 +93,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['add_supplier'])) {
         </div>
     </form>
 
-
-
-
     <h4>Supplier List</h4>
     <table class="table table-bordered">
         <thead>
@@ -99,17 +112,18 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['add_supplier'])) {
                 <td><?php echo htmlspecialchars($row['contact_info']); ?></td>
                 <td><?php echo htmlspecialchars($row['address']); ?></td>
                 <td>
-                    <a href="suppliers.php?delete=<?php echo $row['id']; ?>" class="btn btn-danger btn-sm"
-                       onclick="return confirm('Are you sure you want to delete this supplier?');">Delete</a>
+                <a href="suppliers.php?delete=<?php echo urlencode($row['name']); ?>"
+   class="btn btn-danger btn-sm"
+   onclick="return confirm('Are you sure you want to delete this supplier?');">
+   Delete
+</a>
+
                 </td>
             </tr>
             <?php endwhile; ?>
         </tbody>
     </table>
-
 </div>
-
-
 
 <footer class="bg-dark text-white text-center py-3 fixed-bottom">
     <p>&copy; <?php echo date('Y'); ?> Crispy King. All rights reserved.</p>
