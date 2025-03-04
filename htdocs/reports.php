@@ -17,8 +17,17 @@ $total_sales = $conn->query("SELECT SUM(total_price) AS total FROM Sales WHERE s
 $inventory_result = $conn->query("SELECT * FROM Products");
 
 // Fetch Orders Report
-$orders_query = "SELECT * FROM Orders WHERE order_date BETWEEN '$start_date' AND '$end_date'";
+$orders_query = "SELECT supplier_name, product_name, quantity_ordered, order_date, status 
+                 FROM Orders 
+                 WHERE DATE(order_date) BETWEEN '$start_date' AND '$end_date'";
 $orders_result = $conn->query($orders_query);
+
+
+if (!$orders_result) {
+    die("Query Failed: " . $conn->error);
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -119,30 +128,7 @@ $orders_result = $conn->query($orders_query);
             </tbody>
         </table>
 
-        <!-- Orders Report -->
-        <h4>Orders Report</h4>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Supplier Name</th>
-                    <th>Product Name</th>
-                    <th>Quantity Ordered</th>
-                    <th>Order Date</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($row = $orders_result->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo $row['supplier_name']; ?></td>
-                    <td><?php echo $row['product_name']; ?></td>
-                    <td><?php echo $row['quantity_ordered']; ?></td>
-                    <td><?php echo $row['order_date']; ?></td>
-                    <td><?php echo $row['status']; ?></td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
+
 
     </div>
 
