@@ -42,7 +42,7 @@ if (isset($_GET['delete'])) {
     $stmt->close();
 }
 ?>
-
+ 
 <!DOCTYPE html>
 <html lang="en">
 <head>
