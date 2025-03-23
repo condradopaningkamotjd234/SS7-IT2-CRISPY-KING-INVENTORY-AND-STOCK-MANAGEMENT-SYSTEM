@@ -1,43 +1,63 @@
 <?php
     include "db.php";
     ini_set('display_errors', 1);
-    error_reporting(E_ALL); 
+    error_reporting(E_ALL);
     session_start();
 
-// Handle adding new stock
-if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['add_product'])) {
-    $name = $_POST['name'];
-    $category = $_POST['category'];
-    $price = $_POST['price'];
-    $stock_quantity = $_POST['stock_quantity'];
-    $expiry_date = $_POST['expiry_date'];
+    // Handle adding new stock
+    if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['add_product'])) {
+        $name = $_POST['name'];
+        $category = $_POST['category'];
+        $price = $_POST['price'];
+        $stock_quantity = $_POST['stock_quantity'];
+        $expiry_date = $_POST['expiry_date'];
 
-    $sql = "INSERT INTO Products (name, category, price, stock_quantity, expiry_date) 
-            VALUES ('$name', '$category', '$price', '$stock_quantity', '$expiry_date')";
-    $conn->query($sql);
-    header("Location: inventory.php");
-}
+        $stmt = $conn->prepare("INSERT INTO Products (name, category, price, stock_quantity, expiry_date) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssdis", $name, $category, $price, $stock_quantity, $expiry_date);
+        $stmt->execute();
+        $stmt->close();
 
-// Handle updating stock
-if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['update_stock'])) {
-    $name = $_POST['name'];
-    $new_stock = $_POST['new_stock'];
+        header("Location: inventory.php");
+        exit();
+    }
 
-    $sql = "UPDATE Products SET stock_quantity = stock_quantity + $new_stock WHERE name = '$name'";
-    $conn->query($sql);
-    header("Location: inventory.php");
-}
+    // Handle batch updating stock
+    if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['update_batch'])) {
+        $batch_updates = $_POST['batch_update'];
+        foreach ($batch_updates as $update) {
+            $name = $update['name'];
+            $new_stock = $update['new_stock'];
 
-// Handle deleting a product
-if (isset($_GET['delete'])) {
-    $name = $_GET['delete'];
-    $conn->query("DELETE FROM Products WHERE name = '$name'");
-    header("Location: inventory.php");
-}
+            $stmt = $conn->prepare("UPDATE Products SET stock_quantity = stock_quantity + ? WHERE name = ?");
+            $stmt->bind_param("is", $new_stock, $name);
+            $stmt->execute();
+            $stmt->close();
+        }
 
-// Fetch all products
-$products = $conn->query("SELECT * FROM Products");
+        header("Location: inventory.php");
+        exit();
+    }
 
+    // Handle deleting a product
+    if (isset($_GET['delete'])) {
+        $name = $_GET['delete'];
+        $stmt = $conn->prepare("DELETE FROM Products WHERE name = ?");
+        $stmt->bind_param("s", $name);
+        $stmt->execute();
+        $stmt->close();
+        header("Location: inventory.php");
+        exit();
+    }
+
+    // Pagination setup
+    $limit = 10;
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $offset = ($page - 1) * $limit;
+
+    $total_products = $conn->query("SELECT COUNT(*) as total FROM Products")->fetch_assoc()['total'];
+    $total_pages = ceil($total_products / $limit);
+
+    $products = $conn->query("SELECT * FROM Products LIMIT $limit OFFSET $offset");
 ?>
 
 <!DOCTYPE html>
@@ -69,90 +89,106 @@ $products = $conn->query("SELECT * FROM Products");
     </div>
 </nav>
 
+<div class="container mt-5">
+    <h2 class="text-center">Inventory Management</h2>
 
-    <div class="container mt-5">
-        <h2 class="text-center">Inventory Management</h2>
-
-        <h4>Add New Product</h4>
-        <form method="POST" class="mb-4">
-            <div class="row">
-                <div class="col-md-2">
-                    <input type="text" name="name" class="form-control" placeholder="Product Name" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="text" name="category" class="form-control" placeholder="Category" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="number" step="0.01" name="price" class="form-control" placeholder="Price" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="number" name="stock_quantity" class="form-control" placeholder="Stock Quantity" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="date" name="expiry_date" class="form-control" required>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" name="add_product" class="btn btn-primary">Add Product</button>
-                </div>
-            </div>
-        </form>
-
-        <h4>Update Stock</h4>
-        <form method="POST" class="mb-4">
-            <div class="row">
-                <div class="col-md-6">
-                    <select name="name" class="form-control" required>
-                        <option value="">Select Product</option>
-                        <?php while ($row = $products->fetch_assoc()): ?>
-                            <option value="<?php echo $row['name']; ?>"><?php echo $row['name']; ?></option>
-                        <?php endwhile; ?>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <input type="number" name="new_stock" class="form-control" placeholder="Add Quantity" required>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" name="update_stock" class="btn btn-warning">Update Stock</button>
-                </div>
-            </div>
-        </form>
-
-        <h4>Product List</h4>
+    <!-- Form for batch updating stock -->
+    <h4>Update New Stock</h4>
+    <form method="POST" class="mb-4">
+        <input type="hidden" name="update_batch">
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Product Name</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Stock Quantity</th>
-                    <th>Expiry Date</th>
-                    <th>Actions</th>
+                    <th>Name</th>
+                    <th>New Stock</th>
                 </tr>
             </thead>
             <tbody>
-                <?php
-                $products = $conn->query("SELECT * FROM Products");
-                while ($row = $products->fetch_assoc()): ?>
+                <?php while ($row = $products->fetch_assoc()): ?>
                 <tr>
-                    <td><?php echo $row['name']; ?></td>
-                    <td><?php echo $row['category']; ?></td>
-                    <td>₱<?php echo number_format($row['price'], 2); ?></td>
-                    <td><?php echo $row['stock_quantity']; ?></td>
-                    <td><?php echo $row['expiry_date']; ?></td>
+                    <td><?= htmlspecialchars($row['name']) ?></td>
                     <td>
-                        <a href="inventory.php?delete=<?php echo $row['name']; ?>" class="btn btn-danger btn-sm" 
-                           onclick="return confirm('Are you sure you want to delete this product?');">Delete</a>
+                        <input type="hidden" name="batch_update[<?= $row['name'] ?>][name]" value="<?= htmlspecialchars($row['name']) ?>">
+                        <input type="number" name="batch_update[<?= $row['name'] ?>][new_stock]" class="form-control" required>
                     </td>
                 </tr>
                 <?php endwhile; ?>
             </tbody>
         </table>
+        <button type="submit" name="update_batch" class="btn btn-warning">Update Stock</button>
+    </form>
 
-    </div>
+    <!-- Form for adding new product -->
+    <h4>Add New Product</h4>
+    <form method="POST" class="mb-4">
+        <input type="hidden" name="add_product">
+        <div class="mb-3">
+            <label for="name" class="form-label">Product Name</label>
+            <input type="text" name="name" id="name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <input type="text" name="category" id="category" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="price" class="form-label">Price</label>
+            <input type="number" step="0.01" name="price" id="price" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="stock_quantity" class="form-label">Stock Quantity</label>
+            <input type="number" name="stock_quantity" id="stock_quantity" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="expiry_date" class="form-label">Expiry Date</label>
+            <input type="date" name="expiry_date" id="expiry_date" class="form-control" required>
+        </div>
+        <button type="submit" name="add_product" class="btn btn-success">Add Product</button>
+    </form>
 
-    <footer class="bg-dark text-white text-center py-3 fixed-bottom">
-        <p>&copy; <?php echo date('Y'); ?> Crispy King. All rights reserved.</p>
-    </footer>
+    <!-- Product list table -->
+    <h4>Product List</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Expiry Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            // Reset the result pointer and fetch the products again for the product list
+            $products->data_seek(0);
+            while ($row = $products->fetch_assoc()): ?>
+            <tr>
+                <td><?= htmlspecialchars($row['name']) ?></td>
+                <td><?= htmlspecialchars($row['category']) ?></td>
+                <td>₱<?= number_format($row['price'], 2) ?></td>
+                <td><?= htmlspecialchars($row['stock_quantity']) ?></td>
+                <td><?= htmlspecialchars($row['expiry_date']) ?></td>
+                <td>
+                    <a href="inventory.php?delete=<?= urlencode($row['name']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?');">Delete</a>
+                </td>
+            </tr>
+            <?php endwhile; ?>
+        </tbody>
+    </table>
+    
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination">
+            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                <li class="page-item<?= $i == $page ? ' active' : '' ?>">
+                    <a class="page-link" href="inventory.php?page=<?= $i ?>"><?= $i ?></a>
+                </li>
+            <?php endfor; ?>
+        </ul>
+    </nav>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

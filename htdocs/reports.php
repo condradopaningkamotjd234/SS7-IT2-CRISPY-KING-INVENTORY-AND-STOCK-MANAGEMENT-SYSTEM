@@ -128,6 +128,48 @@ if (!$orders_result) {
             </tbody>
         </table>
 
+        <h4>Stock Received Report</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Stock Received Yesterday</th>
+            <th>Stock Received Today</th>
+            <th>Date Updated</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $today = date('Y-m-d');
+
+        $products = $conn->query("SELECT DISTINCT product_name FROM Inventory");
+        while ($row = $products->fetch_assoc()): 
+            $product_name = $row['product_name'];
+
+            // Kunin ang stock received kahapon
+            $yesterday_result = $conn->query("SELECT SUM(stock_added) AS stock_yesterday 
+                                              FROM Inventory 
+                                              WHERE product_name = '$product_name' 
+                                              AND DATE(date_updated) = '$yesterday'");
+            $yesterday_stock = $yesterday_result->fetch_assoc()['stock_yesterday'] ?? 0;
+
+            // Kunin ang stock received ngayon
+            $today_result = $conn->query("SELECT SUM(stock_added) AS stock_today 
+                                          FROM Inventory 
+                                          WHERE product_name = '$product_name' 
+                                          AND DATE(date_updated) = '$today'");
+            $today_stock = $today_result->fetch_assoc()['stock_today'] ?? 0;
+        ?>
+        <tr>
+            <td><?php echo $product_name; ?></td>
+            <td><?php echo $yesterday_stock; ?></td> <!-- Stock Received Yesterday -->
+            <td><?php echo $today_stock; ?></td> <!-- Stock Received Today -->
+            <td><?php echo $today; ?></td> <!-- Date Updated -->
+        </tr>
+        <?php endwhile; ?>
+    </tbody>
+</table>
 
 
     </div>

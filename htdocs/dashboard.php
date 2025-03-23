@@ -4,6 +4,12 @@
     error_reporting(E_ALL); 
     session_start();
 
+    // Check if the user is logged in
+    if (!isset($_SESSION['username'])) {
+        header("Location: login.php");
+        exit();
+    }
+
     // Get total counts
     $total_products = $conn->query("SELECT COUNT(*) AS count FROM Products")->fetch_assoc()['count'];
     $total_sales = $conn->query("SELECT SUM(quantity_sold) AS count FROM Sales")->fetch_assoc()['count'];
@@ -18,13 +24,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Crispy King</title>
-    <link rel="stylesheet" href="styles/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
         .card {
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
             padding: 20px;
+            margin-bottom: 20px;
         }
         .card h3 {
             font-size: 2em;
@@ -38,13 +44,19 @@
             padding: 10px 15px;
             font-size: 1rem;
         }
+        .navbar-brand {
+            font-size: 1.5rem;
+        }
+        .fixed-bottom p {
+            margin: 0;
+        }
     </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="dashboard.php">CRISPY KING INVENTORY AND STOCK MANAGEMENT SYSTEM</a>
+        <a class="navbar-brand" href="dashboard.php">Crispy King Inventory</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -62,11 +74,11 @@
 </nav>
 
 <div class="container mt-5">
-    <h2 class="text-center">Crispy King Dashboard</h2>
+    <h2 class="text-center mb-4">Crispy King Dashboard</h2>
 
     <div class="row text-center mb-4">
         <!-- Total Products Card -->
-        <div class="col-md-6 mb-4">
+        <div class="col-md-6">
             <div class="card bg-primary text-white">
                 <h3><?php echo $total_products; ?></h3>
                 <p>Total Products</p>
@@ -74,7 +86,7 @@
         </div>
 
         <!-- Total Sales Card -->
-        <div class="col-md-6 mb-4">
+        <div class="col-md-6">
             <div class="card bg-success text-white">
                 <h3><?php echo number_format($total_sales ?: 0); ?></h3>
                 <p>Total Sales</p>
@@ -100,9 +112,9 @@
         <tbody>
             <?php while ($row = $low_stock->fetch_assoc()): ?>
             <tr>
-                <td><?php echo $row['name']; ?></td>
-                <td class="text-danger"><?php echo $row['stock_quantity']; ?></td>
-                <td><?php echo $row['expiry_date']; ?></td>
+                <td><?php echo htmlspecialchars($row['name']); ?></td>
+                <td class="text-danger"><?php echo htmlspecialchars($row['stock_quantity']); ?></td>
+                <td><?php echo htmlspecialchars($row['expiry_date']); ?></td>
             </tr>
             <?php endwhile; ?>
         </tbody>
@@ -113,5 +125,6 @@
     <p>&copy; <?php echo date('Y'); ?> Crispy King. All rights reserved.</p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

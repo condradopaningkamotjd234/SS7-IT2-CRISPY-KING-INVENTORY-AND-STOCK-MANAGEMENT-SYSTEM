@@ -1,4 +1,4 @@
-body {zz
+body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -10,6 +10,7 @@ body {zz
     width: 80%;
     margin: 0 auto;
     padding: 20px;
+    max-width: 1200px; /* Ensure container does not exceed a maximum width */
 }
 
 h1, h2 {
@@ -27,9 +28,24 @@ h1, h2 {
     text-align: center;
     border: none;
     cursor: pointer;
+    border-radius: 5px; /* Add rounded corners to buttons */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for hover effects */
 }
 
 .button:hover {
     background-color: #c2185b; /* Darker pink color */
     color: #ffffff; /* Ensure text remains white on hover */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 100%; /* Make container full width on smaller screens */
+        padding: 10px;
+    }
+
+    .button {
+        width: 100%; /* Make buttons full width on smaller screens */
+        padding: 15px;
+    }
 }

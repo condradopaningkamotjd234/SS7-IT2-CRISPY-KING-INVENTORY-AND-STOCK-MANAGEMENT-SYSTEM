@@ -34,10 +34,10 @@
 
         <div class="row">
             <div class="col-md-4">
-                <a href="inventory.php" class="btn btn-primary btn-lg">Go to Inventory</a>
+                <a href="login.php" class="btn btn-primary btn-lg">Login</a>
             </div>
             <div class="col-md-4">
-                <a href="sales.php" class="btn btn-success btn-lg">Go to Sales</a>
+                <a href="register.php" class="btn btn-success btn-lg">Register</a>
             </div>
             <div class="col-md-4">
                 <a href="reports.php" class="btn btn-info btn-lg">View Reports</a>
