@@ -53,7 +53,7 @@ if (!$orders_result) {
                 <li class="nav-item"><a class="nav-link" href="sales.php">Sales</a></li>
                 <li class="nav-item"><a class="nav-link" href="suppliers.php">Suppliers</a></li>
                 <li class="nav-item"><a class="nav-link" href="reports.php">Reports</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Logout</a></li>
+                <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Log out</a></li>
             </ul>
         </div>
     </div>
@@ -63,7 +63,7 @@ if (!$orders_result) {
     <div class="container mt-5">
         <h2 class="text-center">Reports</h2>
 
-        <h4>Generate Reports</h4>
+        <h4>Report</h4>
         <form method="POST" class="mb-4">
             <div class="row">
                 <div class="col-md-4">
@@ -76,7 +76,7 @@ if (!$orders_result) {
                 </div>
                 <div class="col-md-4">
                     <label>&nbsp;</label>
-                    <button type="submit" class="btn btn-primary form-control">Generate Report</button>
+                    <button type="submit" class="btn btn-primary form-control">Report</button>
                 </div>
             </div>
         </form>
@@ -128,17 +128,7 @@ if (!$orders_result) {
             </tbody>
         </table>
 
-        <h4>Stock Received Report</h4>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Product Name</th>
-            <th>Stock Received Yesterday</th>
-            <th>Stock Received Today</th>
-            <th>Date Updated</th>
-        </tr>
-    </thead>
-    <tbody>
+       
         <?php
         $yesterday = date('Y-m-d', strtotime('-1 day'));
         $today = date('Y-m-d');

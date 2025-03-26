@@ -18,6 +18,28 @@ h1, h2 {
     color: #db1111; /* Red color */
 }
 
+.sales-summary, .sales-record {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sales-summary p, .sales-record ul {
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.sales-record ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sales-record li {
+    margin: 10px 0;
+}
+
 .button {
     display: inline-block;
     padding: 10px 20px;

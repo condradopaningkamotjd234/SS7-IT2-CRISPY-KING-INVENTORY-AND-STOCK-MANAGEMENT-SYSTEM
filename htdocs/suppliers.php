@@ -4,18 +4,19 @@
     error_reporting(E_ALL); 
     session_start();
 
-
-// Handle adding a new supplier
-if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['add_supplier'])) {
-    $name = trim($_POST['name']);
+// Handle updating stock supplies for Magnolia only
+if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['update_stock'])) {
     $contact_info = trim($_POST['contact_info']);
     $address = trim($_POST['address']);
+    $name = "Magnolia"; // Fixed supplier name
 
-    if (empty($name) || empty($contact_info) || empty($address)) {
+    if (empty($contact_info) || empty($address)) {
         echo "<script>alert('All fields are required!'); window.history.back();</script>";
     } else {
-        $stmt = $conn->prepare("INSERT INTO Suppliers (name, contact_info, address) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $name, $contact_info, $address);
+        // Update existing supplier info
+        $stmt = $conn->prepare("UPDATE Suppliers SET contact_info = ?, address = ? WHERE name = ?");
+        $stmt->bind_param("sss", $contact_info, $address, $name);
+
         if ($stmt->execute()) {
             header("Location: suppliers.php");
             exit();
@@ -25,22 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['add_supplier'])) {
         $stmt->close();
     }
 }
-
-// Handle deleting a supplier
-if (isset($_GET['delete'])) {
-    $name = urldecode($_GET['delete']);
-    $stmt = $conn->prepare("DELETE FROM Suppliers WHERE name = ?");
-    $stmt->bind_param("s", $name);
-    
-    if ($stmt->execute()) {
-        header("Location: suppliers.php");
-        exit();
-    } else {
-        echo "Error deleting record: " . $stmt->error;
-    }
-    
-    $stmt->close();
-}
 ?>
  
 <!DOCTYPE html>
@@ -48,7 +33,7 @@ if (isset($_GET['delete'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suppliers - Crispy King</title>
+    <title>Supplier - Magnolia</title>
     <link rel="stylesheet" href="styles/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
@@ -64,22 +49,19 @@ if (isset($_GET['delete'])) {
                 <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link" href="inventory.php">Inventory</a></li>
                 <li class="nav-item"><a class="nav-link" href="sales.php">Sales</a></li>
-                <li class="nav-item"><a class="nav-link" href="suppliers.php">Suppliers</a></li>
                 <li class="nav-item"><a class="nav-link" href="reports.php">Reports</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Logout</a></li>
+                <li class="nav-item"><a class="nav-link" href="logout.php">Log out</a></li>
             </ul>
         </div>
     </div>
 </nav>
 
 <div class="container mt-5">
-    <h2 class="text-center">Suppliers Management</h2>
-
-    <h4>Add New Supplier</h4>
+    <h2 class="text-center">Magnolia Supplier Details</h2>
     <form method="POST" class="mb-4">
         <div class="row">
             <div class="col-md-3">
-                <input type="text" name="name" class="form-control" placeholder="Supplier Name" required>
+                <input type="text" name="name" class="form-control" value="Magnolia" readonly>
             </div>
             <div class="col-md-3">
                 <input type="text" name="contact_info" class="form-control" placeholder="Contact Info" required>
@@ -88,37 +70,28 @@ if (isset($_GET['delete'])) {
                 <input type="text" name="address" class="form-control" placeholder="Address" required>
             </div>
             <div class="col-md-2">
-                <button type="submit" name="add_supplier" class="btn btn-primary">Add Supplier</button>
+                <button type="submit" name="update_stock" class="btn btn-primary">Update</button>
             </div>
         </div>
     </form>
 
-    <h4>Supplier List</h4>
+    <h4>Supplier Information</h4>
     <table class="table table-bordered">
         <thead>
             <tr>
                 <th>Supplier Name</th>
                 <th>Contact Info</th>
                 <th>Address</th>
-                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             <?php
-            $suppliers = $conn->query("SELECT * FROM Suppliers");
-            while ($row = $suppliers->fetch_assoc()): ?>
+            $result = $conn->query("SELECT * FROM Suppliers WHERE name = 'Magnolia'");
+            while ($row = $result->fetch_assoc()): ?>
             <tr>
                 <td><?php echo htmlspecialchars($row['name']); ?></td>
                 <td><?php echo htmlspecialchars($row['contact_info']); ?></td>
                 <td><?php echo htmlspecialchars($row['address']); ?></td>
-                <td>
-                <a href="suppliers.php?delete=<?php echo urlencode($row['name']); ?>"
-   class="btn btn-danger btn-sm"
-   onclick="return confirm('Are you sure you want to delete this supplier?');">
-   Delete
-</a>
-
-                </td>
             </tr>
             <?php endwhile; ?>
         </tbody>

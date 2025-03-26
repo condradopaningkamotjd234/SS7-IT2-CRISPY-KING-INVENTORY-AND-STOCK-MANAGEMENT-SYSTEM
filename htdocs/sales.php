@@ -72,7 +72,7 @@ $products = $conn->query("SELECT * FROM Products WHERE stock_quantity > 0");
                 <li class="nav-item"><a class="nav-link" href="sales.php">Sales</a></li>
                 <li class="nav-item"><a class="nav-link" href="suppliers.php">Suppliers</a></li>
                 <li class="nav-item"><a class="nav-link" href="reports.php">Reports</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Logout</a></li>
+                <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Log out</a></li>
             </ul>
         </div>
     </div>

@@ -59,7 +59,7 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login - Crispy King</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -98,7 +98,7 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 <div class="container">
     <div class="card mx-auto" style="max-width: 400px;">
         <div class="card-body">
-            <h3 class="text-center mb-4">Login</h3>
+            <h3 class="text-center mb-4">Log in</h3>
             <?php if (isset($error)) echo "<div class='alert alert-danger text-center'>$error</div>"; ?>
             <form method="POST" action="">
                 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
